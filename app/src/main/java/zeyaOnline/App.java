@@ -1,59 +1,65 @@
 package zeyaOnline;
 
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import zeyaOnline.model.Page;
+import zeyaOnline.repository.PageRepository;
 
 @SpringBootApplication
 @RestController
 public class App {
-    private List<Page> pages = new ArrayList<>();
 
+    @Autowired
+    private PageRepository pageRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
     }
 
     @PostMapping("/pages")
-    public Page create(@RequestBody Page page) {
-        pages.add(page);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Page create(@Valid @RequestBody Page page) {
+        pageRepository.save(page);
         return page;
     }
 
     @GetMapping("/pages")
     public List<Page> get(@RequestParam(defaultValue = "1") Integer limit) {
-        return pages.stream().limit(limit).toList();
+        return pageRepository.findAll();
     }
 
     @GetMapping("/pages/{id}")
-    public Optional<Page> show (@PathVariable String id) {
-        return pages.stream()
-                .filter(p -> p.getSlug().equals(id))
-                .findFirst();
+    @ResponseStatus(HttpStatus.OK)
+    public Optional<Page> show (@PathVariable Long id) {
+        return pageRepository.findById(id);
     }
 
     @DeleteMapping("/pages/{id}")
-    public void delete(@PathVariable String id) {
-        pages.removeIf(p -> p.getSlug().equals(id));
+    public void delete(@PathVariable Long id) {
+        pageRepository.deleteById(id);
     }
 
-    @PutMapping("/pages/{id}")
-    public Page update(@PathVariable String id, @RequestBody Page data) {
-        Optional<Page> maybePage = pages.stream()
-                .filter(p -> p.getSlug().equals(id))
-                .findFirst();
-        if (maybePage.isPresent()) {
-            Page result = maybePage.get();
-            result.setSlug(data.getSlug());
-            result.setName(data.getName());
-            result.setBody(data.getBody());
-        }
-        return data;
-    }
+//    @PutMapping("/pages/{id}")
+//    public Page update(@PathVariable Long id, @RequestBody Page data) {
+//        Optional<Page> maybePage = pages.stream()
+//                .filter(p -> p.getId().equals(id))
+//                .findFirst();
+//        if (maybePage.isPresent()) {
+//            Page result = maybePage.get();
+//            result.setId(data.getId());
+//            result.setName(data.getName());
+//            result.setBody(data.getBody());
+//        }
+//        return data;
+//    }
 }
