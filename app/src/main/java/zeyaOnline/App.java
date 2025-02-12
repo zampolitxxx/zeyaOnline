@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import zeyaOnline.exception.ResourceNotFoundException;
 import zeyaOnline.model.Page;
 import zeyaOnline.repository.PageRepository;
 
@@ -40,8 +41,10 @@ public class App {
 
     @GetMapping("/pages/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<Page> show (@PathVariable Long id) {
-        return pageRepository.findById(id);
+    Page show (@PathVariable Long id) {
+        Page page = pageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(id + "Not found"));
+        return page;
     }
 
     @DeleteMapping("/pages/{id}")
